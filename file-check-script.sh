@@ -130,6 +130,12 @@ check_file "backend/src/routes/auth.routes.ts"
 check_file "backend/src/utils/logger.ts"
 echo
 
+echo -e "${YELLOW}Backend Design Components:${NC}"
+check_file "backend/src/services/design.service.ts"
+check_file "backend/src/controllers/design.controller.ts"
+check_file "backend/src/routes/design.routes.ts"
+echo
+
 echo -e "${YELLOW}Checking for obsolete files:${NC}"
 if [ -f "backend/src/index.js" ]; then
   echo -e "${RED}✗${NC} backend/src/index.js should be removed (replaced by index.ts)"

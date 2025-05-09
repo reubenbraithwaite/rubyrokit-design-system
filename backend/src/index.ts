@@ -10,6 +10,7 @@ import logger from './utils/logger';
 
 // Import routes
 import authRoutes from './routes/auth.routes';
+import designRoutes from './routes/design.routes';
 
 // Initialize Express app
 const app = express();
@@ -39,6 +40,7 @@ app.get('/health', (req, res) => {
 
 // Apply routes
 app.use('/api/auth', authRoutes);
+app.use('/api/designs', designRoutes);
 
 // 404 handler
 app.use((req, res, next) => {

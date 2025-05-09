@@ -1,27 +1,29 @@
-# Stage 1: Build the application
-FROM node:18-alpine as build
+# Build stage
+FROM node:20-alpine as build
 
+# Set working directory
 WORKDIR /app
 
-# Copy package files
-COPY package.json package-lock.json* tsconfig.json ./
+# Copy package.json and package-lock.json
+COPY package.json package-lock.json ./
 
-# Install dependencies
-RUN npm ci
+# Update TypeScript version and install dependencies
+RUN npm pkg set dependencies.typescript="4.9.5"
+RUN npm install
 
-# Copy source code
+# Copy all files
 COPY . .
 
 # Build the application
 RUN npm run build
 
-# Stage 2: Serve the application
+# Production stage
 FROM nginx:alpine
 
-# Copy built application from Stage 1
+# Copy built files from build stage to nginx
 COPY --from=build /app/build /usr/share/nginx/html
 
-# Copy custom nginx config
+# Copy nginx configuration if you have one
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Expose port 80

@@ -1,5 +1,5 @@
 // src/services/auth.service.ts
-import { User, IUser } from '../models/user.model';
+import User, { IUser } from '../models/User';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import config from '../config';
@@ -22,7 +22,7 @@ export class AuthService {
     lastName: string;
     role?: string;
     institutionId?: string;
-  }): Promise<IUser> {
+  }): Promise<Partial<IUser>> {
     // Check if user already exists
     const existingUser = await User.findOne({ email: userData.email });
     if (existingUser) {
@@ -50,14 +50,15 @@ export class AuthService {
 
     // Return user without password
     const userObject = user.toObject();
-    delete userObject.password;
-    return userObject;
+    const { password, ...userWithoutPassword } = userObject;
+    return userWithoutPassword;
+;
   }
 
   /**
    * Login a user
    */
-  async login(email: string, password: string): Promise<{ user: IUser, token: string }> {
+async login(email: string, password: string): Promise<{ user: Partial<IUser>, token: string }> {
     // Find user
     const user = await User.findOne({ email });
     if (!user) {
@@ -72,14 +73,15 @@ export class AuthService {
 
     // Generate JWT token
     const payload: AuthPayload = {
-      id: user._id,
+      id: String(user._id),
       email: user.email,
       role: user.role
     };
 
-    if (user.institutionId) {
-      payload.institutionId = user.institutionId;
+    if (user.institution) {
+      payload.institutionId = user.institution.toString();
     }
+
 
     const token = jwt.sign(
       payload,
@@ -89,8 +91,8 @@ export class AuthService {
 
     // Return user and token
     const userObject = user.toObject();
-    delete userObject.password;
-    return { user: userObject, token };
+    const { password: _, ...userWithoutPassword } = userObject;
+    return { user: userWithoutPassword as Partial<IUser>, token };
   }
 
   /**

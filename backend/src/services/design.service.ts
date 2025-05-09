@@ -1,5 +1,5 @@
 // /backend/src/services/design.service.ts
-import { Design, IDesign } from '../models/Design';
+import Design, { IDesign } from '../models/Design';
 import mongoose from 'mongoose';
 import logger from '../utils/logger';
 

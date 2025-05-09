@@ -1,46 +1,72 @@
-import dotenv from 'dotenv';
-import express, { Request, Response, NextFunction } from 'express';
+// /backend/src/index.ts
+import express from 'express';
+import mongoose from 'mongoose';
 import cors from 'cors';
-import morgan from 'morgan';
-import connectDB from './config/database';
-import { logger } from './config/logger';
+import helmet from 'helmet';
+import compression from 'compression';
+import { json, urlencoded } from 'body-parser';
+import config from './config';
+import logger from './utils/logger';
 
-// Initialize environment variables
-dotenv.config();
+// Import routes
+import authRoutes from './routes/auth.routes';
 
-// Connect to MongoDB
-connectDB();
-
-// Initialize express app
+// Initialize Express app
 const app = express();
 
-// Middleware
-app.use(cors());
-app.use(express.json());
+// Apply middleware
+app.use(helmet()); // Security headers
+app.use(compression()); // Compress responses
+app.use(cors()); // Enable CORS
+app.use(json()); // Parse JSON bodies
+app.use(urlencoded({ extended: true })); // Parse URL-encoded bodies
 
-// HTTP request logging
-app.use(morgan('dev', { stream: { write: (message) => logger.http(message.trim()) } }));
+// Connect to MongoDB
+mongoose
+  .connect(config.mongoUri)
+  .then(() => {
+    logger.info('Connected to MongoDB successfully');
+  })
+  .catch((err) => {
+    logger.error('MongoDB connection error:', err);
+    process.exit(1);
+  });
 
-// Define port
-const PORT = process.env.PORT || 4000;
+// Health check route
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok', time: new Date().toISOString() });
+});
 
-// Basic routes
-app.get('/api/health', (req: Request, res: Response) => {
-  res.json({ status: 'ok', message: 'RubyRokit API is running' });
+// Apply routes
+app.use('/api/auth', authRoutes);
+
+// 404 handler
+app.use((req, res, next) => {
+  res.status(404).json({ message: 'Route not found' });
 });
 
 // Global error handler
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-  logger.error(`Error: ${err.message}`);
-  res.status(500).json({
-    error: {
-      message: 'An unexpected error occurred',
-      details: process.env.NODE_ENV === 'development' ? err.message : undefined
-    }
-  });
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  logger.error('Unhandled error:', err);
+  res.status(500).json({ message: 'Internal server error' });
 });
 
 // Start server
+const PORT = config.port;
 app.listen(PORT, () => {
-  logger.info(`Server running on port ${PORT}`);
+  logger.info(`Server running on port ${PORT} in ${config.nodeEnv} mode`);
 });
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (err) => {
+  logger.error('Uncaught exception:', err);
+  process.exit(1);
+});
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (err) => {
+  logger.error('Unhandled rejection:', err);
+  process.exit(1);
+});
+
+export default app;

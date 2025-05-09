@@ -89,6 +89,11 @@ check_dir "backend/src"
 check_dir "backend/src/models"
 check_dir "backend/src/config"
 check_dir "backend/src/types"
+check_dir "backend/src/services"
+check_dir "backend/src/middleware"
+check_dir "backend/src/controllers"
+check_dir "backend/src/routes"
+check_dir "backend/src/utils"
 echo
 
 echo -e "${YELLOW}Backend files:${NC}"
@@ -99,6 +104,7 @@ check_file "backend/Dockerfile"
 check_file "backend/src/index.ts"
 check_file "backend/src/config/database.ts"
 check_file "backend/src/config/logger.ts"
+check_file "backend/src/config.ts"
 echo
 
 echo -e "${YELLOW}Backend model types:${NC}"
@@ -114,6 +120,14 @@ check_file "backend/src/models/Institution.ts"
 check_file "backend/src/models/Classroom.ts"
 check_file "backend/src/models/Product.ts"
 check_file "backend/src/models/Order.ts"
+echo
+
+echo -e "${YELLOW}Backend Auth Components:${NC}"
+check_file "backend/src/services/auth.service.ts"
+check_file "backend/src/middleware/auth.middleware.ts"
+check_file "backend/src/controllers/auth.controller.ts"
+check_file "backend/src/routes/auth.routes.ts"
+check_file "backend/src/utils/logger.ts"
 echo
 
 echo -e "${YELLOW}Checking for obsolete files:${NC}"
